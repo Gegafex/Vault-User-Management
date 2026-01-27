@@ -1,0 +1,207 @@
+{
+  "info": {
+    "name": "User Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Inactivate User",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{sessionId}}",
+            "disabled": false,
+            "type": "default"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "disabled": false,
+            "type": "default"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "disabled": false,
+            "type": "default"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "",
+        "url": {
+          "raw": "{{url}}/{{apiversion}}/vobjects/user__sys/{{id}}/actions/Objectlifecyclestateuseraction.user__sys.active_state__sys.change_state_to_inactive_useraction__sys",
+          "protocol": "",
+          "host": [
+            "{{url}}"
+          ],
+          "path": [
+            "{{apiversion}}",
+            "vobjects",
+            "user__sys",
+            "{{id}}",
+            "actions",
+            "Objectlifecyclestateuseraction.user__sys.active_state__sys.change_state_to_inactive_useraction__sys"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "id",
+              "value": "15222293",
+              "disabled": false,
+              "type": "default"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Reactivate User copy",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{sessionId}}",
+            "disabled": false,
+            "type": "default"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "disabled": false,
+            "type": "default"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "disabled": false,
+            "type": "default"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "",
+        "url": {
+          "raw": "{{url}}/{{apiversion}}/vobjects/user__sys/{{id}}/actions/Objectlifecyclestateuseraction.user__sys.inactive_state__sys.change_state_to_active_useraction__sys",
+          "protocol": "",
+          "host": [
+            "{{url}}"
+          ],
+          "path": [
+            "{{apiversion}}",
+            "vobjects",
+            "user__sys",
+            "{{id}}",
+            "actions",
+            "Objectlifecyclestateuseraction.user__sys.inactive_state__sys.change_state_to_active_useraction__sys"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "id",
+              "value": "15222293",
+              "disabled": false,
+              "type": "default"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Retrieve User by email",
+      "event": [],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{sessionId}}",
+            "disabled": false,
+            "type": "default"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "disabled": false,
+            "type": "default"
+          },
+          {
+            "key": "X-VaultAPI-ClientID",
+            "value": "{{clientId}}",
+            "disabled": false,
+            "type": "default"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "",
+        "url": {
+          "raw": "{{url}}/{{apiversion}}/query?q={{vql_query}}",
+          "protocol": "",
+          "host": [
+            "{{url}}"
+          ],
+          "path": [
+            "{{apiversion}}",
+            "query?q={{vql_query}}"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "{{vql_query}}"
+            }
+          ],
+          "variable": []
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "url",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "apiversion",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "id",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "vql_query",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "clientId",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
