@@ -30,9 +30,9 @@ function authenticateVault() {
 
     $result = json_decode($response, true);
 
-    echo "<pre>";
-    print_r($result);
-    echo "</pre>";
+    //echo "<pre>";
+    //print_r($result);
+    //echo "</pre>";
 
     if (isset($result['responseStatus']) && $result['responseStatus'] === "SUCCESS") {
         $_SESSION['vault_sessionId'] = $result['sessionId'];
@@ -55,7 +55,7 @@ if (!isset($_SESSION['vault_sessionId'])) {
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Reactivate Account</title>
+  <title>Reactivate / Inactivate Account</title><link rel="icon" type="image/png" href="img/favicon.png" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -164,10 +164,10 @@ if (!isset($_SESSION['vault_sessionId'])) {
         const alertBox = document.getElementById("vault-alert");
         alertBox.style.opacity = "1";
     
-        // Ocultar después de 10 segundos con fade out
+        // Ocultar después de 5 segundos con fade out
         setTimeout(() => {
           alertBox.style.opacity = "0";
-        }, 10000);
+        }, 5000);
       });
     </script>
 
@@ -176,13 +176,13 @@ if (!isset($_SESSION['vault_sessionId'])) {
     <img src="img/boehringer_logo.png" alt="Boehringer Ingelheim">
 
     <!-- Título central -->
-    <h1>Reactivate Account</h1>
+    <h1>Reactivate / Inactivate Account</h1>
 
     <!-- Logo Veeva Vault -->
-    <img src="img/vault_logo.png" alt="Veeva Vault">
+    <img src="img/veeva_logo.png" alt="Veeva Vault">
 
     <!-- Formulario -->
-    <div style="margin-top:20px;">
+    
     
       
     
@@ -193,7 +193,7 @@ if (!isset($_SESSION['vault_sessionId'])) {
      
     
       <div id="messageBox"></div>
-    </div>
+    
 
     
       <!-- Contenedor para mensajes dinámicos -->
@@ -211,7 +211,7 @@ if (!isset($_SESSION['vault_sessionId'])) {
     
         try {
           // 1. Retrieve User by email
-          const response = await fetch("/api/retrieveUserByEmail", {
+          const response = await fetch("api/retrieveUserByEmail.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email })
@@ -224,7 +224,7 @@ if (!isset($_SESSION['vault_sessionId'])) {
     
             // 2. Según el botón elegido
             if (actionType === "reactivate") {
-              const reactivateResp = await fetch("/api/reactivateUserCopy", {
+              const reactivateResp = await fetch("api/reactivateUserCopy.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: userId })
@@ -249,7 +249,7 @@ if (!isset($_SESSION['vault_sessionId'])) {
                 `;
               }
             } else if (actionType === "inactivate") {
-              const inactivateResp = await fetch("/api/inactivateUser", {
+              const inactivateResp = await fetch("api/inactivateUser.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: userId })
@@ -309,7 +309,5 @@ if (!isset($_SESSION['vault_sessionId'])) {
       document.getElementById("btnReactivate").addEventListener("click", () => handleAction("reactivate"));
       document.getElementById("btnInactivate").addEventListener("click", () => handleAction("inactivate"));
     </script>
-
-  </div>
 </body>
 </html>
