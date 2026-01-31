@@ -228,7 +228,7 @@ if (!isset($_SESSION['vault_sessionId'])) {
 
     <!-- Script -->
     <script>
-      const sessionId = "<? echo $_SESSION['vault_sessionId']; ?>";
+      const sessionId = "<?php echo $_SESSION['vault_sessionId']; ?>";
       async function handleAction(actionType) {
         const email = emailInput.value.trim();
         
