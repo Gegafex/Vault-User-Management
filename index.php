@@ -5,14 +5,14 @@ function authenticateVault() {
     $url = "https://bisbx-promomats.veevavault.com/api/v25.2/auth";
 
     // Igual que en Postman: form-data
-    $data = [
-        "username" => "integration.cdw@bisbx.com",
-        "password" => "BI_Integration2026"
-    ];
+    $credentials = include('api/credentials.php');
+    $username = $credentials['username'];
+    $password = $credentials['password'];
+
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data); // array → multipart/form-data
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $credentials); // array → multipart/form-data
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
     // Opcional: headers básicos (cURL calcula boundary solo)
@@ -118,6 +118,23 @@ if (!isset($_SESSION['vault_sessionId'])) {
       color: #0073e6;
       text-decoration: none;
     }
+    #loader {
+      display: none; /* oculto por defecto */
+      position: fixed; /* se queda fijo en pantalla */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.7); /* capa semitransparente */
+      z-index: 9999; /* por encima de todo */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #loader img {
+      width: 120px; /* tamaño del spinner */
+      height: 100px;
+    }
     /* Responsivo */
     @media (max-width: 480px) {
       .login-box {
@@ -133,6 +150,7 @@ if (!isset($_SESSION['vault_sessionId'])) {
         max-width: 100%;
       }
     }
+
   </style>
 </head>
 <body>
@@ -170,6 +188,22 @@ if (!isset($_SESSION['vault_sessionId'])) {
         }, 5000);
       });
     </script>
+    <div id="loader">
+        <img src="img/spinner.gif" alt="Loading..." />
+    </div>
+
+    <script>
+        function showLoader() {
+          const loader = document.getElementById('loader');
+          loader.style.display = 'flex'; // aparece centrado
+        }
+        
+        function hideLoader() {
+          const loader = document.getElementById('loader');
+          loader.style.display = 'none'; // vuelve a ocultarse
+        }
+
+    </script>
 
   <div class="login-box">
     <!-- Logo Boehringer Ingelheim -->
@@ -182,23 +216,26 @@ if (!isset($_SESSION['vault_sessionId'])) {
     <img src="img/veeva_logo.png" alt="Veeva Vault">
 
     <!-- Formulario -->
-    
-    
       
-    
-      
-        <input type="text" id="emailInput" placeholder="Enter your email" />
+        <input type="email" id="emailInput" placeholder="Enter your email" required />
         <button id="btnReactivate" class="btn">Reactivate Account</button><br><br>
         <button id="btnInactivate" class="btn">Inactivate Account</button>
-     
     
       <div id="messageBox"></div>
-    
-
     
       <!-- Contenedor para mensajes dinámicos -->
       <div id="messageBox"></div>
     </div>
+    <script>
+    document.getElementById('accountForm').addEventListener('submit', function(e) {
+      const email = document.getElementById('emailInput').value;
+      const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // regex simple
+      if (!pattern.test(email)) {
+        e.preventDefault(); // evita que se envíe
+        alert("Por favor ingresa un email válido.");
+      }
+    });
+    </script>
 
     <!-- Script -->
     <script>
@@ -207,9 +244,11 @@ if (!isset($_SESSION['vault_sessionId'])) {
     
       async function handleAction(actionType) {
         const email = emailInput.value.trim();
+        
         if (!email) return;
     
         try {
+            showLoader();
           // 1. Retrieve User by email
           const response = await fetch("api/retrieveUserByEmail.php", {
             method: "POST",
@@ -272,6 +311,7 @@ if (!isset($_SESSION['vault_sessionId'])) {
             }
     
           } else {
+              hideLoader();
             // 3. Usuario no encontrado → mensaje rojo con bullets
             messageBox.innerHTML = `
               <div style="
@@ -301,13 +341,15 @@ if (!isset($_SESSION['vault_sessionId'])) {
             `;
           }
         } catch (err) {
+            hideLoader();
           console.error("Error:", err);
         }
       }
-    
+        
       // Asignar eventos
       document.getElementById("btnReactivate").addEventListener("click", () => handleAction("reactivate"));
       document.getElementById("btnInactivate").addEventListener("click", () => handleAction("inactivate"));
+      
     </script>
 </body>
 </html>
