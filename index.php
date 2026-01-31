@@ -127,7 +127,6 @@ if (!isset($_SESSION['vault_sessionId'])) {
       height: 100%;
       background: rgba(255,255,255,0.7); /* capa semitransparente */
       z-index: 9999; /* por encima de todo */
-      display: flex;
       justify-content: center;
       align-items: center;
     }
@@ -216,32 +215,20 @@ if (!isset($_SESSION['vault_sessionId'])) {
     <img src="img/veeva_logo.png" alt="Veeva Vault">
 
     <!-- Formulario -->
-      
+    <form id="accountForm">
         <input type="email" id="emailInput" placeholder="Enter your email" required />
-        <button id="btnReactivate" class="btn">Reactivate Account</button><br><br>
-        <button id="btnInactivate" class="btn">Inactivate Account</button>
-    
+        <button type="button" id="btnReactivate" class="btn">Reactivate Account</button><br>
+        <button type="button" id="btnInactivate" class="btn">Inactivate Account</button>
+    </form>
       <div id="messageBox"></div>
     
       <!-- Contenedor para mensajes dinámicos -->
       <div id="messageBox"></div>
     </div>
-    <script>
-    document.getElementById('accountForm').addEventListener('submit', function(e) {
-      const email = document.getElementById('emailInput').value;
-      const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // regex simple
-      if (!pattern.test(email)) {
-        e.preventDefault(); // evita que se envíe
-        alert("Por favor ingresa un email válido.");
-      }
-    });
-    </script>
 
     <!-- Script -->
     <script>
-      const emailInput = document.getElementById("emailInput");
-      const messageBox = document.getElementById("messageBox");
-    
+      const sessionId = "<? echo $_SESSION['vault_sessionId']; ?>";
       async function handleAction(actionType) {
         const email = emailInput.value.trim();
         
@@ -253,7 +240,7 @@ if (!isset($_SESSION['vault_sessionId'])) {
           const response = await fetch("api/retrieveUserByEmail.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email })
+            body: JSON.stringify({ email, sessionId })
           });
     
           const data = await response.json();
@@ -263,13 +250,14 @@ if (!isset($_SESSION['vault_sessionId'])) {
     
             // 2. Según el botón elegido
             if (actionType === "reactivate") {
-              const reactivateResp = await fetch("api/reactivateUserCopy.php", {
+              const reactivateResp = await fetch("api/reactivateUser.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: userId })
+                body: JSON.stringify({ id: userId, sessionId })
               });
     
               const reactivateData = await reactivateResp.json();
+              hideLoader();
     
               if (reactivateResp.ok && reactivateData.success) {
                 messageBox.innerHTML = `
@@ -291,10 +279,11 @@ if (!isset($_SESSION['vault_sessionId'])) {
               const inactivateResp = await fetch("api/inactivateUser.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: userId })
+                body: JSON.stringify({ id: userId, sessionId})
               });
     
               const inactivateData = await inactivateResp.json();
+              hideLoader();
     
               if (inactivateResp.ok && inactivateData.success) {
                 messageBox.innerHTML = `
