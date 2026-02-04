@@ -25,7 +25,7 @@ function authenticateVault() {
     curl_close($ch);
 
     if ($error) {
-        die("Error en la conexión: " . $error);
+        die("Connection error: " . $error);
     }
 
     $result = json_decode($response, true);
@@ -45,7 +45,7 @@ function authenticateVault() {
 // Validar sesión
 if (!isset($_SESSION['vault_sessionId'])) {
     if (!authenticateVault()) {
-        die("No se pudo autenticar contra Veeva Vault.");
+        die("It was not possible to athenticate against Veeva Vault.");
     }
 }
 ?>
@@ -244,9 +244,9 @@ if (!isset($_SESSION['vault_sessionId'])) {
           });
     
           const data = await response.json();
-    
+          
           if (response.ok && data.success) {
-            const userId = data.id;
+            const userId = data.userId;
     
             // 2. Según el botón elegido
             if (actionType === "reactivate") {
@@ -257,10 +257,9 @@ if (!isset($_SESSION['vault_sessionId'])) {
               });
     
               const reactivateData = await reactivateResp.json();
-              hideLoader();
     
               if (reactivateResp.ok && reactivateData.success) {
-                messageBox.innerHTML = `
+                document.getElementById("messageBox").innerHTML = `
                   <div style="
                     background-color:#d4edda;
                     color:#155724;
@@ -268,13 +267,60 @@ if (!isset($_SESSION['vault_sessionId'])) {
                     padding:12px;
                     margin-top:12px;">
                     Account Reactivated successfully, now you can login to 
-                    <a href="https://bi-vault" target="_blank" 
+                    <a href="https://login.veevavault.com" target="_blank" 
                        style="color:#155724; font-weight:bold; text-decoration:underline;">
                        bi-vault
                     </a>.
                   </div>
                 `;
+              } else if (userId) {
+                  const errormsg = reactivateData.errors; //explorar cómo traerme el verdadero mensaje
+                  document.getElementById("messageBox").innerHTML = `
+                  <div style="
+                    background-color:#f8d7da;
+                    color:#856404;
+                    border-radius:8px;
+                    padding:12px;
+                    text-align: left;
+                    margin-top:12px;">
+                     Your account cannot be Reactivated for one of the following reasons: <br>
+                    <li>The account is inactive at domain level.</li>
+                    <li>There is no license available.</li><br>
+                    Please contact an administrator <a href="mailto:zzITM_SVaultCOE@boehringer-ingelheim.com">here</a>
+                  </div>
+                  </div>
+                `;
+              } else {
+                // 3. Usuario no encontrado → mensaje rojo con bullets
+                document.getElementById("messageBox").innerHTML = `
+                  <div style="
+                    background-color:#f8d7da;
+                    color:#721c24;
+                    border-radius:8px;
+                    padding:12px;
+                    text-align: left;
+                    margin-top:12px;">
+                    <p>User does not exist in the selected environment, please go the following MyServices form to request your account:</p>
+                    <ul style="margin-left:20px;">
+                      <li>
+                        <a href="https://boehringer.service-now.com/esc?id=sc_cat_item&sys_id=f020f7cc47768e9001cdba9f016d43e0&table=sc_cat_item" 
+                           target="_blank" 
+                           style="color:#721c24; font-weight:bold; text-decoration:underline;">
+                           PromoMats and Medical Veeva Vault - Request Access / Remove Access - Internal - MyServices
+                        </a>
+                      </li><br>
+                      <li>
+                        <a href="https://boehringer.service-now.com/esc?id=sc_cat_item&sys_id=1bcf3a5493881ed8fcb8bd0c5cba10f9&table=sc_cat_item" 
+                           target="_blank" 
+                           style="color:#721c24; font-weight:bold; text-decoration:underline;">
+                           PromoMats and Medical Veeva Vault - Request Access / Remove Access - External - MyServices
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                `;
               }
+              hideLoader();
             } else if (actionType === "inactivate") {
               const inactivateResp = await fetch("api/inactivateUser.php", {
                 method: "POST",
@@ -283,10 +329,9 @@ if (!isset($_SESSION['vault_sessionId'])) {
               });
     
               const inactivateData = await inactivateResp.json();
-              hideLoader();
     
               if (inactivateResp.ok && inactivateData.success) {
-                messageBox.innerHTML = `
+                document.getElementById("messageBox").innerHTML = `
                   <div style="
                     background-color:#fff3cd;
                     color:#856404;
@@ -296,45 +341,58 @@ if (!isset($_SESSION['vault_sessionId'])) {
                     Account Inactivated successfully.
                   </div>
                 `;
-              }
+              } else if (userId) {
+                  const errormsg = inactivateData.errors; //explorar cómo traerme el verdadero mensaje
+                  document.getElementById("messageBox").innerHTML = `
+                  <div style="
+                    background-color:#f8d7da;
+                    color:#856404;
+                    border-radius:8px;
+                    padding:12px;
+                    margin-top:12px;">
+                     Your account cannot be Inactivated, it seems to be already Inactive.
+                  </div>
+                `;
+              } else {
+              
+                    // 3. Usuario no encontrado → mensaje rojo con bullets
+                    document.getElementById("messageBox").innerHTML = `
+                      <div style="
+                        background-color:#f8d7da;
+                        color:#721c24;
+                        border-radius:8px;
+                        padding:12px;
+                        text-align: left;
+                        margin-top:12px;">
+                        <p>User does not exist in the selected environment, please go the following MyServices form to request your account:</p>
+                        <ul style="margin-left:20px;">
+                          <li>
+                            <a href="https://boehringer.service-now.com/esc?id=sc_cat_item&sys_id=f020f7cc47768e9001cdba9f016d43e0&table=sc_cat_item" 
+                               target="_blank" 
+                               style="color:#721c24; font-weight:bold; text-decoration:underline;">
+                               PromoMats and Medical Veeva Vault - Request Access / Remove Access - Internal - MyServices
+                            </a>
+                          </li><br>
+                          <li>
+                            <a href="https://boehringer.service-now.com/esc?id=sc_cat_item&sys_id=1bcf3a5493881ed8fcb8bd0c5cba10f9&table=sc_cat_item" 
+                               target="_blank" 
+                               style="color:#721c24; font-weight:bold; text-decoration:underline;">
+                               PromoMats and Medical Veeva Vault - Request Access / Remove Access - External - MyServices
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    `;
+                }
+                hideLoader();
             }
-    
-          } else {
-              hideLoader();
-            // 3. Usuario no encontrado → mensaje rojo con bullets
-            messageBox.innerHTML = `
-              <div style="
-                background-color:#f8d7da;
-                color:#721c24;
-                border-radius:8px;
-                padding:12px;
-                margin-top:12px;">
-                <p>User does not exist in the selected environment, please go the following MyServices form to request your account:</p>
-                <ul style="margin-left:20px;">
-                  <li>
-                    <a href="https://boehringer.service-now.com/esc?id=sc_cat_item&sys_id=f020f7cc47768e9001cdba9f016d43e0&table=sc_cat_item" 
-                       target="_blank" 
-                       style="color:#721c24; font-weight:bold; text-decoration:underline;">
-                       PromoMats and Medical Veeva Vault - Request Access / Remove Access - Internal - MyServices
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://boehringer.service-now.com/esc?id=sc_cat_item&sys_id=f020f7cc47768e9001cdba9f016d43e0&table=sc_cat_item" 
-                       target="_blank" 
-                       style="color:#721c24; font-weight:bold; text-decoration:underline;">
-                       PromoMats and Medical Veeva Vault - Request Access / Remove Access - External - MyServices
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            `;
-          }
-        } catch (err) {
-            hideLoader();
+        }
+       } catch (err) {
+          //hideLoader();
           console.error("Error:", err);
         }
       }
-        
+     
       // Asignar eventos
       document.getElementById("btnReactivate").addEventListener("click", () => handleAction("reactivate"));
       document.getElementById("btnInactivate").addEventListener("click", () => handleAction("inactivate"));
