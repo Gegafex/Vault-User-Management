@@ -398,5 +398,129 @@ if (!isset($_SESSION['vault_sessionId'])) {
       document.getElementById("btnInactivate").addEventListener("click", () => handleAction("inactivate"));
       
     </script>
+
+    <script src="https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js"></script>
+        <script>
+          (function () {
+            // Cambiá este selector si tu input tiene otro id diferente
+            const EMAIL_INPUT_SELECTOR = '#emailInput';
+        
+            // OPCIONAL: si NO tenés msalInstance global creada en otra parte,
+            // podés crear una mínima SOLO para leer la cuenta existente:
+            const CREATE_MINIMAL_MSAL_IF_MISSING = true;
+        
+            // ⚠️ Solo si usás la instancia mínima. Si ya tenés msalInstance en tu app, podés ignorar esto.
+            const MINIMAL_MSAL_CONFIG = {
+              auth: {
+                clientId: "TU_CLIENT_ID_AZURE_AD"   // <-- poné tu Client ID si usás la instancia mínima
+                // authority: "https://login.microsoftonline.com/<tu-tenant-id-o-dominio>" // opcional
+              },
+              cache: {
+                cacheLocation: "sessionStorage"
+              }
+            };
+        
+            function setEmailIntoField(email) {
+              if (!email) return;
+              const input = document.querySelector(EMAIL_INPUT_SELECTOR);
+              if (!input) {
+                console.warn('No se encontró el input', EMAIL_INPUT_SELECTOR);
+                return;
+              }
+              // placeholder y value (si querés solo placeholder, comentá la línea de value)
+              input.placeholder = email;
+              if (!input.value) input.value = email;
+            }
+        
+            async function getEmailFromMsalInstance(instance) {
+              if (!instance) return null;
+        
+              // Si volviste de un loginRedirect, procesá la respuesta:
+              try {
+                await instance.handleRedirectPromise();
+              } catch (e) {
+                console.warn('handleRedirectPromise error:', e);
+              }
+        
+              // Intentar obtener / fijar la cuenta activa
+              let account = instance.getActiveAccount();
+              if (!account) {
+                const accounts = instance.getAllAccounts();
+                if (accounts && accounts.length > 0) {
+                  account = accounts[0];
+                  instance.setActiveAccount(account);
+                }
+              }
+        
+              // Si no hay cuenta, no hay sesión SSO visible para MSAL en esta SPA todavía
+              if (!account) return null;
+        
+              // Extraer email desde las claims típicas
+              const claims = account.idTokenClaims || {};
+              const email = account.username
+                         || claims.email
+                         || (Array.isArray(claims.emails) && claims.emails[0])
+                         || claims.preferred_username
+                         || claims.upn
+                         || null;
+        
+              return email || null;
+            }
+        
+            async function setDefaultEmail() {
+              // Caso A: ya existe una instancia global (la mejor opción)
+              if (typeof window.msalInstance !== 'undefined') {
+                const email = await getEmailFromMsalInstance(window.msalInstance);
+                if (email) {
+                  setEmailIntoField(email);
+                  return;
+                }
+              }
+        
+              // Caso B: no hay msalInstance, pero está msal-browser y nos permiten crear una mínima
+              if (CREATE_MINIMAL_MSAL_IF_MISSING && window.msal && typeof window.msal.PublicClientApplication === 'function') {
+                try {
+                  const temp = new window.msal.PublicClientApplication(MINIMAL_MSAL_CONFIG);
+                  const email = await getEmailFromMsalInstance(temp);
+                  if (email) {
+                    setEmailIntoField(email);
+                    return;
+                  }
+                } catch (e) {
+                  console.warn('No se pudo crear instancia mínima de MSAL:', e);
+                }
+              }
+        
+              // Caso C: fallback: intentar leer cuentas que MSAL guarda en session/localStorage
+              try {
+                const keysRaw = sessionStorage.getItem('msal.account.keys') || localStorage.getItem('msal.account.keys');
+                if (keysRaw) {
+                  const keys = JSON.parse(keysRaw);
+                  const firstKey = Array.isArray(keys) ? keys[0] : Object.keys(keys || {})[0];
+                  if (firstKey) {
+                    const accRaw = sessionStorage.getItem(firstKey) || localStorage.getItem(firstKey);
+                    if (accRaw) {
+                      const acc = JSON.parse(accRaw);
+                      const claims = acc.idTokenClaims || {};
+                      const email = acc.username
+                                 || claims.email
+                                 || (Array.isArray(claims.emails) && claims.emails[0])
+                                 || claims.preferred_username
+                                 || claims.upn;
+                      if (email) setEmailIntoField(email);
+                    }
+                  }
+                }
+              } catch (e) {
+                console.warn('Fallback storage no disponible:', e);
+              }
+            }
+        
+            // Ejecutar cuando el DOM esté listo
+            document.addEventListener('DOMContentLoaded', setDefaultEmail);
+          })();
+        </script>
+   </body>
+ </html>
 </body>
 </html>
